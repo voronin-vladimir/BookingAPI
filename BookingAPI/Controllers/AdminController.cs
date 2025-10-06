@@ -10,6 +10,7 @@ namespace BookingAPI.Controllers
     public class AdminController : ControllerBase
     {
         private readonly IRoomService _roomService;
+        
         public AdminController(IRoomService roomService) => _roomService = roomService;
 
         [HttpPost]

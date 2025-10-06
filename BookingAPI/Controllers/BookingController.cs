@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -21,11 +22,17 @@ namespace BookingAPI.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetBooking(int id) =>
-            Ok(await _bookingService.GetBooking(id));
+        public async Task<IActionResult> GetBooking(int id)
+        {
+            var booking = await _bookingService.GetBooking(id);
+            return booking is null ? BadRequest($"No booking with id: {id}") : Ok(booking);
+        }
 
         [HttpGet("user/{userId}")]
-        public async Task<IActionResult> GetUserBookings(string userId) =>
-            Ok(await _bookingService.GetBookingsByUser(userId));
+        public async Task<IActionResult> GetUserBookings(string userId)
+        {
+            var bookings = await _bookingService.GetBookingsByUser(userId);
+            return bookings.Any() ? Ok(bookings) : BadRequest($"No bookings for user: {userId}");
+        }
     }
 }

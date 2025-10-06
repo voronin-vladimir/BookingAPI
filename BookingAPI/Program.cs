@@ -1,3 +1,4 @@
+using Application;
 using Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -12,6 +13,7 @@ builder.Services.AddSwaggerGen();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")!;
 builder.Services.AddInfrastructure(connectionString);
+builder.Services.AddApplication();
 
 var app = builder.Build();
 
