@@ -11,12 +11,26 @@ namespace Application.Services
     public class BookingService : IBookingService
     {
         private readonly IBookingRepository _bookingRepository;
+        private readonly IRoomRepository _roomRepository;
 
-        public BookingService(IBookingRepository bookingRepository) =>
-            _bookingRepository = bookingRepository;
-
-        public async Task<Booking?> BookRoom(string userId, int roomId, DateTime start, DateTime end)
+        public BookingService(IBookingRepository bookingRepository, IRoomRepository roomRepository)
         {
+            _bookingRepository = bookingRepository;
+            _roomRepository = roomRepository;
+        }
+
+        public async Task<BookingDto?> BookRoom(string userId, int roomId, DateTime start, DateTime end)
+        {
+            var room = await _roomRepository.GetById(roomId);
+            if (room == null)
+                throw new Exception("No room");
+
+            var existingRoomBookings = await _bookingRepository.GetBookingsByRoom(roomId);
+            var hasOverlap = existingRoomBookings.Any(b => start < b.EndDate && end > b.StartDate);
+
+            if (hasOverlap)
+                throw new Exception("Has overlap");
+
             var booking = new Booking
             {
                 UserId = userId,
@@ -27,7 +41,9 @@ namespace Application.Services
             };
 
             await _bookingRepository.BookRoom(booking);
-            return booking;
+
+            var dto = GetDto(booking);
+            return dto;
         }
 
         public async Task<BookingDto?> GetBooking(int id)
@@ -36,15 +52,8 @@ namespace Application.Services
 
             if (booking == null)
                 return null;
-            
-            var dto = new BookingDto
-            {
-                Id = booking.Id,
-                UserId = booking.UserId,
-                RoomId = booking.RoomId,
-                StartDate = booking.StartDate,
-                EndDate = booking.EndDate
-            };
+
+            var dto = GetDto(booking);
             return dto;
         }
 
@@ -52,14 +61,19 @@ namespace Application.Services
         {
             var bookings = await _bookingRepository.GetBookingsByUser(userId);
 
-            return bookings.Select(b => new BookingDto
+            return bookings.Select(GetDto);
+        }
+
+        private static BookingDto GetDto(Booking booking)
+        {
+            return new BookingDto
             {
-                Id = b.Id,
-                UserId = b.UserId,
-                RoomId = b.RoomId,
-                StartDate = b.StartDate,
-                EndDate = b.EndDate,
-            });
+                Id = booking.Id,
+                UserId = booking.UserId,
+                RoomId = booking.RoomId,
+                StartDate = booking.StartDate,
+                EndDate = booking.EndDate
+            };
         }
     }
 }

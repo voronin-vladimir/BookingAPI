@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Application.Interfaces;
@@ -34,6 +35,15 @@ namespace Infrastructure.Repositories
             return await _context.Bookings
                 .Include(b => b.Room)
                 .Where(b => b.UserId == userId)
+                .OrderByDescending(b => b.StartDate)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Booking>> GetBookingsByRoom(int roomId)
+        {
+            return await _context.Bookings
+                .Include(b => b.Room)
+                .Where(b => b.RoomId == roomId)
                 .OrderByDescending(b => b.StartDate)
                 .ToListAsync();
         }

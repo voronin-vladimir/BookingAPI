@@ -9,5 +9,6 @@ namespace Application.Interfaces
         Task<Booking?> BookRoom(Booking booking);
         Task<Booking?> GetBooking(int id);
         Task<IEnumerable<Booking>> GetBookingsByUser(string userId);
+        Task<IEnumerable<Booking>> GetBookingsByRoom(int roomId);
     }
 }
